@@ -1,0 +1,54 @@
+---
+title: "Consulting Project"
+output: html_document
+date: '2022-04-06'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(arsenal)
+library(data.table)
+library(tidyselect)
+library(tidyverse)
+library(stringr)
+```
+
+read data
+```{r}
+df<-read.csv("consulting project.csv",heade=TRUE)
+```
+
+Select data which include 802.6 and 802.7
+```{r}
+tmp<-df %>% mutate_all(all_vars(. %in% c(802.6,802.7)))
+df[apply(tmp,1,sum)>0,] %>% View()
+```
+
+Select data include S02.85, S02.3X, S02.12X, S02.84, S02.83
+```{r}
+tar=c('S02.85', 'S02.3X', 'S02.12X', 'S02.84', 'S02.83','802.6','802.7')
+get_candi<-function(target,df){
+  tmp=startsWith(c(as.matrix(df)), target)
+  #col_name=colnames(df)
+  tmp2=data.frame(matrix(tmp,ncol=369))
+  tmp_index=apply(tmp2,1,sum,na.rm = T)>0
+  re=df[tmp_index,]
+  return(re)
+}
+l=lapply(tar,get_candi,df=df)
+final_data<-bind_rows(l) %>% view()
+
+
+
+```
+
+```{r}
+# DF= data.frame()
+# or (i in tar){
+#   re=get_candi(i,df)
+#   print(re)
+#   rbind(DF,re)
+#  }
+
+```
+
