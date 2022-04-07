@@ -20,13 +20,13 @@ df<-read.csv("consulting project.csv",heade=TRUE)
 
 Select data which include 802.6 and 802.7
 ```{r}
-tmp<-df %>% mutate_all(all_vars(. %in% c(802.6,802.7)))
-df[apply(tmp,1,sum)>0,] %>% View()
+# tmp<-df %>% mutate_all(all_vars(. %in% c(802.6,802.7)))
+# df[apply(tmp,1,sum)>0,] %>% View()
 ```
 
-Select data include S02.85, S02.3X, S02.12X, S02.84, S02.83
+Select data include S02.85, S02.3X, S02.12X, S02.84, S02.83，802.6 and 802.7
 ```{r}
-tar=c('S02.85', 'S02.3X', 'S02.12X', 'S02.84', 'S02.83','802.6','802.7')
+tar=c('S02.85', 'S02.3', 'S02.12', 'S02.84', 'S02.83','802.6','802.7')
 get_candi<-function(target,df){
   tmp=startsWith(c(as.matrix(df)), target)
   #col_name=colnames(df)
@@ -36,19 +36,64 @@ get_candi<-function(target,df){
   return(re)
 }
 l=lapply(tar,get_candi,df=df)
+
 final_data<-bind_rows(l) %>% view()
 
+count(final_data,)
+t(final_data)
+final_data %>% select(ICD9.diagnosis.codes.1:ICD9.diagnosis.codes.2) %>% as.character()
+final_data %>% distinct() %>%  pivot_longer(ICD9.diagnosis.codes.1:ICD10.diagnosis.codes.33,names_to ='surgery',values_to = 'value')
+final_data %>% select(ICD9.diagnosis.codes.1:ICD9.diagnosis.codes.2) %>% pivot_longer(ICD9.diagnosis.codes.1:ICD9.diagnosis.codes.2,names_to = 'surgery',values_to = 'value')
 
+who %>% pivot_longer(
+  cols = new_sp_m014:newrel_f65,
+  names_to = c("diagnosis", "gender", "age"),
+  names_pattern = "new_?(.*)_(.)(.*)",
+  values_to = "count"
+)
 
+billboard %>%
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    names_prefix = "wk",
+    values_to = "rank",
+    values_drop_na = TRUE
+  )
+
+fifinal_data<-na.omit(c(as.matrix(distinct(final_data) %>% select(ICD9.diagnosis.codes.1:ICD10.diagnosis.codes.33)))) %>% data.frame() 
+colnames(fifinal_data)<-'value'
+write.csv(fifinal_data%>% count(value),'final_data.csv')
+getwd()
 ```
 
 ```{r}
-# DF= data.frame()
-# or (i in tar){
-#   re=get_candi(i,df)
-#   print(re)
-#   rbind(DF,re)
-#  }
 
+
+DF= data.frame()
+seperate<-for (i in tar){
+    re=get_candi(i,df)
+    print(re)
+    rbind(DF,re)
+}
+```
+
+nunmber of patient of different diagnosis code(condition) barplot
+
+```{r}
+ICDCode<-tar
+num<-c(1,6,4,4,4,2,0)
+Numdf<-data.frame(ICDCode,num)
+ggplot(Numdf, aes(x = ICDCode, y = num, fill = ICDCode))+
+  geom_bar(stat="identity")+
+  labs(x = 'ICD Code', y= "Number of Cases", axis=100)+
+  geom_text(aes(label=num), vjust=1.6, color="black", size=3)
+```
+
+
+Barplot for Sexual
+```{r}
+ggplot(final_data, aes(x = Gender, fill = Gender))+
+  geom_bar(stat="count")
 ```
 
